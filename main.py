@@ -81,7 +81,7 @@ def interactive_mode():
     """Run the decoder in interactive mode."""
     console = Console()
     decoder = SiriBhoovalayaDecoder()
-    
+
     console.print(Panel.fit(
         "[bold blue]Siri Bhoovalaya Decryption System[/bold blue]\n"
         "Interactive Mode",
@@ -89,63 +89,75 @@ def interactive_mode():
     ))
 
     while True:
-        console.print("\n[bold green]Available Commands:[/bold green]")
-        console.print("1. Decrypt sequence")
-        console.print("2. Display matrix")
-        console.print("3. Analyze pattern")
-        console.print("4. Exit")
+        try:
+            console.print("\n[bold green]Available Commands:[/bold green]")
+            console.print("1. Decrypt sequence")
+            console.print("2. Display matrix")
+            console.print("3. Analyze pattern")
+            console.print("4. Exit")
 
-        choice = Prompt.ask("Select an option", choices=["1", "2", "3", "4"])
+            choice = Prompt.ask("Select an option", choices=["1", "2", "3", "4"])
 
-        if choice == "1":
-            sequence_str = Prompt.ask("Enter sequence (comma-separated numbers)")
-            sequence = parse_sequence(sequence_str)
-            if sequence:
+            if choice == "3":
                 pattern = Prompt.ask(
-                    "Select pattern",
+                    "Select pattern type",
                     choices=["chakra", "navamaank", "diagonal"],
                     default="chakra"
-                )
-                script = Prompt.ask(
-                    "Select script",
-                    choices=["devanagari", "kannada", "sanskrit"],
-                    default="devanagari"
                 )
                 start_pos_str = Prompt.ask(
                     "Enter start position (row,col)",
                     default="0,0"
                 )
                 start_pos = parse_start_pos(start_pos_str)
-                
-                result = decoder.decrypt_sequence(
-                    sequence,
-                    pattern=pattern,
-                    script=script,
-                    start_pos=start_pos
-                )
-                
-                console.print("\n[bold]Decryption Result:[/bold]")
-                console.print(Panel(Text(result, justify="center")))
+                decoder.analyze_pattern(pattern, start_pos)
+                continue
 
-        elif choice == "2":
-            decoder.display_matrix()
+            if choice == "1":
+                sequence_str = Prompt.ask("Enter sequence (comma-separated numbers)")
+                sequence = parse_sequence(sequence_str)
+                if sequence:
+                    pattern = Prompt.ask(
+                        "Select pattern",
+                        choices=["chakra", "navamaank", "diagonal"],
+                        default="chakra"
+                    )
+                    script = Prompt.ask(
+                        "Select script",
+                        choices=["devanagari", "kannada", "sanskrit"],
+                        default="devanagari"
+                    )
+                    start_pos_str = Prompt.ask(
+                        "Enter start position (row,col)",
+                        default="0,0"
+                    )
+                    start_pos = parse_start_pos(start_pos_str)
 
-        elif choice == "3":
-            pattern = Prompt.ask(
-                "Select pattern to analyze",
-                choices=["chakra", "navamaank", "diagonal"],
-                default="chakra"
-            )
-            start_pos_str = Prompt.ask(
-                "Enter start position (row,col)",
-                default="0,0"
-            )
-            start_pos = parse_start_pos(start_pos_str)
-            decoder.analyze_pattern(pattern, start_pos)
+                    result = decoder.decrypt_sequence(
+                        sequence,
+                        pattern=pattern,
+                        script=script,
+                        start_pos=start_pos
+                    )
 
-        else:  # choice == "4"
-            console.print("[yellow]Exiting...[/yellow]")
+                    console.print("\n[bold]Decryption Result:[/bold]")
+                    console.print(Panel(Text(result, justify="center")))
+
+            elif choice == "2":
+                decoder.display_matrix()
+
+            else:  # choice == "4"
+                console.print("[yellow]Exiting...[/yellow]")
+                break
+
+        except EOFError:
+            console.print("\n[yellow]Exiting due to EOF...[/yellow]")
             break
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Exiting due to user interrupt...[/yellow]")
+            break
+        except Exception as e:
+            console.print(f"\n[red]Error: {str(e)}[/red]")
+            continue
 
 def main():
     """Main entry point of the application."""
@@ -168,7 +180,7 @@ def main():
 
     start_pos = parse_start_pos(args.start_pos)
     decoder = SiriBhoovalayaDecoder()
-    
+
     result = decoder.decrypt_sequence(
         sequence,
         pattern=args.pattern,
