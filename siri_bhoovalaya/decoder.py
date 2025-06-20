@@ -4,10 +4,6 @@ Coordinates matrix operations, pattern traversal, and character mapping.
 """
 
 from typing import List, Optional
-from rich.console import Console
-from rich.table import Table
-from rich.box import SQUARE
-from rich.style import Style
 from .matrix import ChakraMatrix
 from .patterns import BandhaPatterns
 from .mappings import CharacterMap
@@ -19,7 +15,6 @@ class SiriBhoovalayaDecoder:
             self.matrix = ChakraMatrix()
             self.patterns = BandhaPatterns(self.matrix)
             self.char_map = CharacterMap()
-            self.console = Console()
             print("Decoder initialized successfully")
         except Exception as e:
             print(f"Error during initialization: {str(e)}")
@@ -66,7 +61,7 @@ class SiriBhoovalayaDecoder:
             return ''.join(result)
 
         except Exception as e:
-            self.console.print(f"[red]Error during decryption: {str(e)}[/red]")
+            print(f"Error during decryption: {str(e)}")
             return ""
 
     def display_matrix(self) -> None:
@@ -93,7 +88,6 @@ class SiriBhoovalayaDecoder:
                 print()  # New line after each row
 
             print("=" * 81)  # Footer separator
-            print("\nMatrix display completed successfully")
 
         except Exception as e:
             print(f"Error in display_matrix: {str(e)}")
@@ -101,9 +95,10 @@ class SiriBhoovalayaDecoder:
     def analyze_pattern(self, pattern: str, start_pos: tuple = (0, 0)) -> None:
         """Analyze and display a pattern traversal."""
         try:
-            print(f"\nAnalyzing {pattern} pattern from position {start_pos}:")
+            print(f"\nAnalyzing {pattern} pattern from position {start_pos}")
             print("=" * 50)
 
+            # Get pattern generator
             if pattern == 'chakra':
                 pattern_gen = self.patterns.chakra_bandha(start_pos)
                 description = "Spiral pattern traversal"
@@ -116,20 +111,22 @@ class SiriBhoovalayaDecoder:
             else:
                 raise ValueError(f"Unsupported pattern: {pattern}")
 
+            # Display pattern information
             print(f"\nPattern Type: {pattern}")
             print(f"Description: {description}")
             print(f"Starting Position: {start_pos}")
             print("\nTraversal Sequence:")
             print("-" * 50)
 
+            # Show the sequence
             sequence = list(pattern_gen)
             for i, value in enumerate(sequence, 1):
-                if i % 5 == 0:  # Line break every 5 numbers
-                    print(f"{value:2d}")
-                else:
-                    print(f"{value:2d}", end=" -> ")
+                print(f"{value:2d}", end=" ")
+                if i % 10 == 0:  # Line break every 10 numbers
+                    print()
+            print("\n")  # Extra newline at the end
 
-            print("\nTotal steps:", len(sequence))
+            print(f"Total steps: {len(sequence)}")
             print("=" * 50)
 
         except Exception as e:

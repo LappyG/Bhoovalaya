@@ -8,9 +8,7 @@ import sys
 import argparse
 from typing import List, Optional
 from rich.console import Console
-from rich.prompt import Prompt
 from rich.panel import Panel
-from rich.layout import Layout
 from rich.text import Text
 
 from siri_bhoovalaya.decoder import SiriBhoovalayaDecoder
@@ -61,8 +59,7 @@ def parse_sequence(sequence_str: str) -> Optional[List[int]]:
             return sequence
         raise ValueError("Numbers must be between 1 and 64")
     except ValueError as e:
-        console = Console()
-        console.print(f"[red]Error parsing sequence: {str(e)}[/red]")
+        print(f"Error parsing sequence: {str(e)}")
         return None
 
 def parse_start_pos(pos_str: str) -> tuple:
@@ -73,63 +70,56 @@ def parse_start_pos(pos_str: str) -> tuple:
             return (row, col)
         raise ValueError("Position must be within matrix bounds (0-26)")
     except ValueError as e:
-        console = Console()
-        console.print(f"[red]Error parsing start position: {str(e)}[/red]")
+        print(f"Error parsing start position: {str(e)}")
         return (0, 0)
 
 def interactive_mode():
     """Run the decoder in interactive mode."""
-    console = Console()
     decoder = SiriBhoovalayaDecoder()
-
-    console.print(Panel.fit(
-        "[bold blue]Siri Bhoovalaya Decryption System[/bold blue]\n"
-        "Interactive Mode",
-        title="Welcome"
-    ))
+    print("\nSiri Bhoovalaya Decryption System")
+    print("Interactive Mode")
+    print("-" * 40)
 
     while True:
         try:
-            console.print("\n[bold green]Available Commands:[/bold green]")
-            console.print("1. Decrypt sequence")
-            console.print("2. Display matrix")
-            console.print("3. Analyze pattern")
-            console.print("4. Exit")
+            print("\nAvailable Commands:")
+            print("1. Decrypt sequence")
+            print("2. Display matrix")
+            print("3. Analyze pattern")
+            print("4. Exit")
 
-            choice = Prompt.ask("Select an option", choices=["1", "2", "3", "4"])
+            choice = input("\nSelect an option [1/2/3/4]: ").strip()
+            if choice not in ["1", "2", "3", "4"]:
+                print("Invalid option. Please try again.")
+                continue
 
             if choice == "3":
-                pattern = Prompt.ask(
-                    "Select pattern type",
-                    choices=["chakra", "navamaank", "diagonal"],
-                    default="chakra"
-                )
-                start_pos_str = Prompt.ask(
-                    "Enter start position (row,col)",
-                    default="0,0"
-                )
+                print("\nAvailable patterns: chakra, navamaank, diagonal")
+                pattern = input("Select pattern type [chakra]: ").strip().lower() or "chakra"
+                if pattern not in ["chakra", "navamaank", "diagonal"]:
+                    print("Invalid pattern. Using chakra.")
+                    pattern = "chakra"
+
+                start_pos_str = input("Enter start position (row,col) [0,0]: ").strip() or "0,0"
                 start_pos = parse_start_pos(start_pos_str)
                 decoder.analyze_pattern(pattern, start_pos)
                 continue
 
             if choice == "1":
-                sequence_str = Prompt.ask("Enter sequence (comma-separated numbers)")
+                sequence_str = input("Enter sequence (comma-separated numbers): ").strip()
                 sequence = parse_sequence(sequence_str)
                 if sequence:
-                    pattern = Prompt.ask(
-                        "Select pattern",
-                        choices=["chakra", "navamaank", "diagonal"],
-                        default="chakra"
-                    )
-                    script = Prompt.ask(
-                        "Select script",
-                        choices=["devanagari", "kannada", "sanskrit"],
-                        default="devanagari"
-                    )
-                    start_pos_str = Prompt.ask(
-                        "Enter start position (row,col)",
-                        default="0,0"
-                    )
+                    print("\nAvailable patterns: chakra, navamaank, diagonal")
+                    pattern = input("Select pattern [chakra]: ").strip().lower() or "chakra"
+                    if pattern not in ["chakra", "navamaank", "diagonal"]:
+                        pattern = "chakra"
+
+                    print("\nAvailable scripts: devanagari, kannada, sanskrit")
+                    script = input("Select script [devanagari]: ").strip().lower() or "devanagari"
+                    if script not in ["devanagari", "kannada", "sanskrit"]:
+                        script = "devanagari"
+
+                    start_pos_str = input("Enter start position (row,col) [0,0]: ").strip() or "0,0"
                     start_pos = parse_start_pos(start_pos_str)
 
                     result = decoder.decrypt_sequence(
@@ -139,38 +129,37 @@ def interactive_mode():
                         start_pos=start_pos
                     )
 
-                    console.print("\n[bold]Decryption Result:[/bold]")
-                    console.print(Panel(Text(result, justify="center")))
+                    if result:
+                        print("\nDecryption Result:")
+                        print("-" * 40)
+                        print(result)
+                        print("-" * 40)
 
             elif choice == "2":
                 decoder.display_matrix()
 
-            else:  # choice == "4"
-                console.print("[yellow]Exiting...[/yellow]")
+            elif choice == "4":
+                print("\nExiting...")
                 break
 
-        except EOFError:
-            console.print("\n[yellow]Exiting due to EOF...[/yellow]")
-            break
         except KeyboardInterrupt:
-            console.print("\n[yellow]Exiting due to user interrupt...[/yellow]")
+            print("\nExiting due to user interrupt...")
             break
         except Exception as e:
-            console.print(f"\n[red]Error: {str(e)}[/red]")
+            print(f"\nError: {str(e)}")
             continue
 
 def main():
     """Main entry point of the application."""
     parser = create_parser()
     args = parser.parse_args()
-    console = Console()
 
     if args.interactive:
         interactive_mode()
         return
 
     if not args.sequence:
-        console.print("[red]Error: Sequence is required in non-interactive mode[/red]")
+        print("Error: Sequence is required in non-interactive mode")
         parser.print_help()
         sys.exit(1)
 
@@ -188,8 +177,11 @@ def main():
         start_pos=start_pos
     )
 
-    console.print("\n[bold]Decryption Result:[/bold]")
-    console.print(Panel(Text(result, justify="center")))
+    if result:
+        print("\nDecryption Result:")
+        print("-" * 40)
+        print(result)
+        print("-" * 40)
 
 if __name__ == "__main__":
     main()
